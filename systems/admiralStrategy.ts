@@ -42,7 +42,7 @@ export class AdmiralYiStrategy {
     let emotion: UserIntent['emotion'] = 'neutral';
     if (/빨리|급해|지금|당장/i.test(userMessage)) emotion = 'urgent';
     else if (/왜|어떻게|설명/i.test(userMessage)) emotion = 'curious';
-    else if /안돼|오류|에러|문제/i.test(userMessage)) emotion = 'frustrated';
+    else if (/안돼|오류|에러|문제/i.test(userMessage)) emotion = 'frustrated';
 
     // 복잡도 분석
     let complexity: UserIntent['complexity'] = 'simple';
