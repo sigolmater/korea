@@ -8,12 +8,14 @@ import Header from './components/Header';
 import WelcomeScreen from './components/WelcomeScreen';
 import Settings from './components/Settings';
 import ChatExport from './components/ChatExport';
+import HealthMonitor from './components/HealthMonitor';
 import { useLocalStorage } from './hooks/useLocalStorage';
 
 const App: React.FC = () => {
   const [messages, setMessages] = useLocalStorage<ChatMessageType[]>('zcore-chat-history', []);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [showSettings, setShowSettings] = useState<boolean>(false);
+  const [hasError, setHasError] = useState<boolean>(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -64,8 +66,10 @@ const App: React.FC = () => {
         content: responseText,
       };
       setMessages((prevMessages) => [...prevMessages, modelMessage]);
+      setHasError(false);
     } catch (error) {
       console.error("Failed to get response from Z-CORE:", error);
+      setHasError(true);
       const errorMessage: ChatMessageType = {
         role: MessageRole.MODEL,
         content: "시스템 오류가 발생했습니다. 잠시 후 다시 시도해주세요.\n\n오류가 계속되면 설정에서 대화 기록을 초기화해보세요.",
@@ -136,6 +140,9 @@ const App: React.FC = () => {
           onClearHistory={handleClearHistory}
         />
       )}
+
+      {/* 華佗 System Health Monitor */}
+      <HealthMonitor messageCount={messages.length} errorOccurred={hasError} />
     </div>
   );
 };
