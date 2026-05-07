@@ -10,6 +10,7 @@ import Settings from './components/Settings';
 import ChatExport from './components/ChatExport';
 import HealthMonitor from './components/HealthMonitor';
 import VoiceTimbreProfile from './components/VoiceTimbreProfile';
+import MetaKnowledgePanel from './components/MetaKnowledgePanel';
 import { useLocalStorage } from './hooks/useLocalStorage';
 
 const App: React.FC = () => {
@@ -151,6 +152,9 @@ const App: React.FC = () => {
         latestMessage={messages.filter(m => m.role === MessageRole.USER).slice(-1)[0]?.content}
         messageCount={messages.filter(m => m.role === MessageRole.USER).length}
       />
+
+      {/* 🧠 Meta Knowledge Networking Engine */}
+      <MetaKnowledgePanel messages={messages} />
     </div>
   );
 };
