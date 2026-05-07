@@ -11,12 +11,14 @@ import ChatExport from './components/ChatExport';
 import HealthMonitor from './components/HealthMonitor';
 import VoiceTimbreProfile from './components/VoiceTimbreProfile';
 import MetaKnowledgePanel from './components/MetaKnowledgePanel';
+import TechnologyMap from './components/TechnologyMap';
 import { useLocalStorage } from './hooks/useLocalStorage';
 
 const App: React.FC = () => {
   const [messages, setMessages] = useLocalStorage<ChatMessageType[]>('zcore-chat-history', []);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [showSettings, setShowSettings] = useState<boolean>(false);
+  const [showTechMap, setShowTechMap] = useState<boolean>(false);
   const [hasError, setHasError] = useState<boolean>(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -155,6 +157,21 @@ const App: React.FC = () => {
 
       {/* 🧠 Meta Knowledge Networking Engine */}
       <MetaKnowledgePanel messages={messages} />
+
+      {/* 🗺️ Technology Map */}
+      {showTechMap && <TechnologyMap onClose={() => setShowTechMap(false)} />}
+
+      {/* Toggle Technology Map Button */}
+      {!showTechMap && (
+        <button
+          onClick={() => setShowTechMap(true)}
+          className="fixed top-20 left-4 z-40 bg-gradient-to-r from-yellow-600 to-orange-600 text-white px-4 py-2 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 flex items-center space-x-2"
+          title="기술 맵 열기"
+        >
+          <span className="text-xl">🗺️</span>
+          <span className="text-sm font-semibold">기술 맵</span>
+        </button>
+      )}
     </div>
   );
 };
