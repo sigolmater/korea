@@ -35,7 +35,7 @@ interface TechnologyMapProps {
 }
 
 const TechnologyMap: React.FC<TechnologyMapProps> = ({ onClose }) => {
-  const [activeView, setActiveView] = useState<'table' | 'matrix' | 'network'>('table');
+  const [activeView, setActiveView] = useState<'table' | 'matrix' | 'network' | 'ranking'>('ranking');
   const [selectedTech, setSelectedTech] = useState<string | null>(null);
 
   // 전체 기술 목록
@@ -416,39 +416,50 @@ const TechnologyMap: React.FC<TechnologyMapProps> = ({ onClose }) => {
       {/* Tab Navigation */}
       <div className="flex border-b border-gray-700 bg-gray-900/30">
         <button
+          onClick={() => setActiveView('ranking')}
+          className={`flex-1 px-3 py-3 text-sm font-medium transition-colors ${
+            activeView === 'ranking'
+              ? 'bg-gray-700 text-red-400 border-b-2 border-red-400'
+              : 'text-gray-400 hover:text-gray-200'
+          }`}
+        >
+          🏆 순위
+        </button>
+        <button
           onClick={() => setActiveView('table')}
-          className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${
+          className={`flex-1 px-3 py-3 text-sm font-medium transition-colors ${
             activeView === 'table'
               ? 'bg-gray-700 text-yellow-400 border-b-2 border-yellow-400'
               : 'text-gray-400 hover:text-gray-200'
           }`}
         >
-          📊 Excel 기술 표
+          📊 표
         </button>
         <button
           onClick={() => setActiveView('matrix')}
-          className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${
+          className={`flex-1 px-3 py-3 text-sm font-medium transition-colors ${
             activeView === 'matrix'
               ? 'bg-gray-700 text-orange-400 border-b-2 border-orange-400'
               : 'text-gray-400 hover:text-gray-200'
           }`}
         >
-          🔗 연결 매트릭스
+          🔗 매트릭스
         </button>
         <button
           onClick={() => setActiveView('network')}
-          className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${
+          className={`flex-1 px-3 py-3 text-sm font-medium transition-colors ${
             activeView === 'network'
               ? 'bg-gray-700 text-green-400 border-b-2 border-green-400'
               : 'text-gray-400 hover:text-gray-200'
           }`}
         >
-          🌐 가중치 네트워크
+          🌐 네트워크
         </button>
       </div>
 
       {/* Content */}
       <div className="flex-1 overflow-y-auto p-4">
+        {activeView === 'ranking' && <RankingView technologies={technologies} links={links} />}
         {activeView === 'table' && <TechTableView technologies={technologies} />}
         {activeView === 'matrix' && (
           <ConnectionMatrix
@@ -471,6 +482,217 @@ const TechnologyMap: React.FC<TechnologyMapProps> = ({ onClose }) => {
         <div className="flex items-center justify-between text-xs text-gray-500">
           <span>💡 모든 기술이 Excel 기반으로 정리됨</span>
           <span>🔗 가중치 링크로 관계 시각화</span>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+/**
+ * 🏆 기술 순위 분석
+ */
+const RankingView: React.FC<{
+  technologies: Technology[];
+  links: TechnologyLink[];
+}> = ({ technologies, links }) => {
+  // 연결 카운트 계산
+  const getConnectionCount = (techId: string): number => {
+    return links.filter(l => l.from === techId || l.to === techId).length;
+  };
+
+  // 가중치 점수 계산 (중요도 + 복잡도 + 연결수)
+  const calculateScore = (tech: Technology): number => {
+    const connectionCount = getConnectionCount(tech.id);
+    const avgLinkWeight = links
+      .filter(l => l.from === tech.id || l.to === tech.id)
+      .reduce((sum, l) => sum + l.weight, 0) / Math.max(connectionCount, 1);
+
+    return (
+      tech.importance * 0.4 +
+      tech.complexity * 0.2 +
+      connectionCount * 10 * 0.2 +
+      avgLinkWeight * 0.2
+    );
+  };
+
+  // 순위별 정렬
+  const ranked = [...technologies].sort((a, b) => calculateScore(b) - calculateScore(a));
+
+  // 카테고리별 최고
+  const topByCategory = technologies.reduce((acc, tech) => {
+    if (!acc[tech.category] || calculateScore(tech) > calculateScore(acc[tech.category])) {
+      acc[tech.category] = tech;
+    }
+    return acc;
+  }, {} as Record<string, Technology>);
+
+  // 가장 연결된 기술
+  const mostConnected = [...technologies].sort(
+    (a, b) => getConnectionCount(b) - getConnectionCount(a)
+  )[0];
+
+  // 가장 중요한 기술
+  const mostImportant = [...technologies].sort((a, b) => b.importance - a.importance)[0];
+
+  return (
+    <div className="space-y-4">
+      {/* 종합 순위 TOP 5 */}
+      <div className="bg-gradient-to-r from-red-900/30 to-orange-900/30 border border-red-600/30 rounded-lg p-4">
+        <h3 className="text-lg font-bold text-red-400 mb-3 flex items-center space-x-2">
+          <span>🏆</span>
+          <span>종합 순위 TOP 5</span>
+        </h3>
+        <div className="space-y-2">
+          {ranked.slice(0, 5).map((tech, i) => {
+            const score = calculateScore(tech);
+            const connections = getConnectionCount(tech.id);
+
+            return (
+              <div
+                key={tech.id}
+                className="bg-gray-800/50 rounded-lg p-3 flex items-center space-x-3"
+              >
+                <div
+                  className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg ${
+                    i === 0
+                      ? 'bg-yellow-500 text-gray-900'
+                      : i === 1
+                      ? 'bg-gray-400 text-gray-900'
+                      : i === 2
+                      ? 'bg-orange-600 text-white'
+                      : 'bg-gray-700 text-gray-300'
+                  }`}
+                >
+                  {i + 1}
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="font-semibold text-gray-200">{tech.name}</span>
+                    <span className="text-yellow-400 font-bold">{Math.round(score)}점</span>
+                  </div>
+                  <div className="flex items-center space-x-3 text-xs text-gray-400">
+                    <span>중요도: {tech.importance}%</span>
+                    <span>복잡도: {tech.complexity}%</span>
+                    <span>연결: {connections}개</span>
+                  </div>
+                </div>
+                <div
+                  className="w-3 h-3 rounded-full flex-shrink-0"
+                  style={{ backgroundColor: tech.color }}
+                />
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* 카테고리별 1위 */}
+      <div className="bg-gray-900/50 rounded-lg p-4">
+        <h3 className="text-sm font-semibold text-cyan-400 mb-3">📊 카테고리별 1위</h3>
+        <div className="grid grid-cols-2 gap-2">
+          {Object.entries(topByCategory).map(([category, tech]) => (
+            <div
+              key={category}
+              className="bg-gray-800/50 border-l-4 rounded-r p-3"
+              style={{ borderLeftColor: tech.color }}
+            >
+              <div className="text-xs text-gray-500 mb-1">{category}</div>
+              <div className="font-semibold text-gray-200 text-sm">{tech.name}</div>
+              <div className="text-xs text-yellow-400 mt-1">
+                {Math.round(calculateScore(tech))}점
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* 특별상 */}
+      <div className="grid grid-cols-2 gap-4">
+        {/* 최다 연결 */}
+        <div className="bg-gradient-to-br from-purple-900/30 to-pink-900/30 border border-purple-600/30 rounded-lg p-4">
+          <div className="flex items-center space-x-2 mb-2">
+            <span className="text-2xl">🔗</span>
+            <span className="text-sm font-semibold text-purple-400">최다 연결상</span>
+          </div>
+          <div className="font-bold text-gray-200">{mostConnected.name}</div>
+          <div className="text-xs text-gray-400 mt-1">
+            {getConnectionCount(mostConnected.id)}개 연결
+          </div>
+        </div>
+
+        {/* 최고 중요도 */}
+        <div className="bg-gradient-to-br from-yellow-900/30 to-orange-900/30 border border-yellow-600/30 rounded-lg p-4">
+          <div className="flex items-center space-x-2 mb-2">
+            <span className="text-2xl">⭐</span>
+            <span className="text-sm font-semibold text-yellow-400">최고 중요도상</span>
+          </div>
+          <div className="font-bold text-gray-200">{mostImportant.name}</div>
+          <div className="text-xs text-gray-400 mt-1">중요도 {mostImportant.importance}%</div>
+        </div>
+      </div>
+
+      {/* 전체 순위 리스트 */}
+      <div className="bg-gray-900/50 rounded-lg p-4">
+        <h3 className="text-sm font-semibold text-orange-400 mb-3">📋 전체 순위 (15개)</h3>
+        <div className="space-y-1">
+          {ranked.map((tech, i) => {
+            const score = calculateScore(tech);
+            return (
+              <div
+                key={tech.id}
+                className="flex items-center justify-between py-2 px-3 hover:bg-gray-800/50 rounded transition-colors"
+              >
+                <div className="flex items-center space-x-3">
+                  <span className="text-gray-500 font-mono w-6 text-right">{i + 1}</span>
+                  <div
+                    className="w-2 h-2 rounded-full"
+                    style={{ backgroundColor: tech.color }}
+                  />
+                  <span className="text-gray-300 text-sm">{tech.name}</span>
+                  <span className="text-xs text-gray-600">{tech.category}</span>
+                </div>
+                <div className="flex items-center space-x-4 text-xs">
+                  <span className="text-gray-500">
+                    연결 {getConnectionCount(tech.id)}
+                  </span>
+                  <span className="text-yellow-400 font-semibold w-12 text-right">
+                    {Math.round(score)}점
+                  </span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* 권장 사항 */}
+      <div className="bg-gradient-to-r from-green-900/30 to-teal-900/30 border border-green-600/30 rounded-lg p-4">
+        <h3 className="text-sm font-semibold text-green-400 mb-2 flex items-center space-x-2">
+          <span>💡</span>
+          <span>개발 우선순위 권장</span>
+        </h3>
+        <div className="text-xs text-gray-300 space-y-2">
+          <div className="flex items-start space-x-2">
+            <span className="text-green-400 mt-0.5">1.</span>
+            <span>
+              <strong className="text-green-300">{ranked[0].name}</strong> - 가장 높은 종합 점수,
+              우선적으로 테스트 및 최적화 권장
+            </span>
+          </div>
+          <div className="flex items-start space-x-2">
+            <span className="text-green-400 mt-0.5">2.</span>
+            <span>
+              <strong className="text-green-300">{mostConnected.name}</strong> - 최다 연결,
+              이 기술의 안정성이 전체 시스템에 영향
+            </span>
+          </div>
+          <div className="flex items-start space-x-2">
+            <span className="text-green-400 mt-0.5">3.</span>
+            <span>
+              복잡도가 높은 기술 ({ranked.filter(t => t.complexity > 80).length}개)은
+              지속적인 리팩토링 필요
+            </span>
+          </div>
         </div>
       </div>
     </div>
