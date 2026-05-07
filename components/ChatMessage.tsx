@@ -2,6 +2,7 @@
 import React from 'react';
 import { ChatMessage, MessageRole } from '../types';
 import { rainbowPalette } from '../systems/rainbowPalette';
+import VoiceTrajectory from './VoiceTrajectory';
 
 interface ChatMessageProps {
   message?: ChatMessage;
@@ -100,6 +101,12 @@ const ChatMessageComponent: React.FC<ChatMessageProps> = ({ message, isLoading }
           >
             <p className="whitespace-pre-wrap">{message.content}</p>
           </div>
+
+          {/* 🎨 음질 궤적 시각화 - 한 줄로 모든 것을 담는다 */}
+          <div className="mt-2 ml-2">
+            <VoiceTrajectory text={message.content} userId="zcore" isUser={false} animate={true} />
+          </div>
+
           {emotion !== 'neutral' && (
             <div className="mt-1 ml-2 flex items-center space-x-1 text-xs text-gray-500">
               <span>{emotionLabels[emotion].icon}</span>
@@ -119,21 +126,28 @@ const ChatMessageComponent: React.FC<ChatMessageProps> = ({ message, isLoading }
   const userColor = rainbowPalette.getColorForEmotion(userEmotion);
 
   return (
-    <div className="flex items-start justify-end space-x-4">
-      <div
-        className="text-white rounded-lg p-4 max-w-2xl transition-all duration-300"
-        style={{
-          background: `linear-gradient(135deg, ${userColor.primary}dd, ${userColor.accent}dd)`,
-          boxShadow: `0 4px 12px ${userColor.primary}30`
-        }}
-      >
-        <p className="whitespace-pre-wrap">{message.content}</p>
-      </div>
-       <div className="flex-shrink-0 w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center shadow-lg">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-            </svg>
+    <div className="flex flex-col items-end space-y-2">
+      <div className="flex items-start justify-end space-x-4">
+        <div
+          className="text-white rounded-lg p-4 max-w-2xl transition-all duration-300"
+          style={{
+            background: `linear-gradient(135deg, ${userColor.primary}dd, ${userColor.accent}dd)`,
+            boxShadow: `0 4px 12px ${userColor.primary}30`
+          }}
+        >
+          <p className="whitespace-pre-wrap">{message.content}</p>
         </div>
+        <div className="flex-shrink-0 w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center shadow-lg">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+          </svg>
+        </div>
+      </div>
+
+      {/* 🎨 주인님 음질 궤적 - 한 줄로 모든 것을 담는다 */}
+      <div className="mr-14">
+        <VoiceTrajectory text={message.content} userId="master" isUser={true} animate={true} />
+      </div>
     </div>
   );
 };
