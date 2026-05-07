@@ -9,6 +9,7 @@ import WelcomeScreen from './components/WelcomeScreen';
 import Settings from './components/Settings';
 import ChatExport from './components/ChatExport';
 import HealthMonitor from './components/HealthMonitor';
+import VoiceTimbreProfile from './components/VoiceTimbreProfile';
 import { useLocalStorage } from './hooks/useLocalStorage';
 
 const App: React.FC = () => {
@@ -143,6 +144,13 @@ const App: React.FC = () => {
 
       {/* 華佗 System Health Monitor */}
       <HealthMonitor messageCount={messages.length} errorOccurred={hasError} />
+
+      {/* 🎵 Voice Timbre Authentication */}
+      <VoiceTimbreProfile
+        userId="master"
+        latestMessage={messages.filter(m => m.role === MessageRole.USER).slice(-1)[0]?.content}
+        messageCount={messages.filter(m => m.role === MessageRole.USER).length}
+      />
     </div>
   );
 };
