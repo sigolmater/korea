@@ -1,11 +1,49 @@
 
 import React from 'react';
 import { ChatMessage, MessageRole } from '../types';
+import { rainbowPalette } from '../systems/rainbowPalette';
 
 interface ChatMessageProps {
   message?: ChatMessage;
   isLoading?: boolean;
 }
+
+// 감정 분석 함수 (Simple keyword-based sentiment analysis)
+const analyzeEmotion = (text: string): 'error' | 'warning' | 'info' | 'success' | 'neutral' | 'creative' | 'deep' => {
+  const lowerText = text.toLowerCase();
+
+  // Error patterns
+  if (lowerText.includes('오류') || lowerText.includes('에러') || lowerText.includes('error') || lowerText.includes('실패')) {
+    return 'error';
+  }
+
+  // Warning patterns
+  if (lowerText.includes('주의') || lowerText.includes('경고') || lowerText.includes('warning') || lowerText.includes('조심')) {
+    return 'warning';
+  }
+
+  // Success patterns
+  if (lowerText.includes('성공') || lowerText.includes('완료') || lowerText.includes('success') || lowerText.includes('좋') || lowerText.includes('감사')) {
+    return 'success';
+  }
+
+  // Creative patterns
+  if (lowerText.includes('창의') || lowerText.includes('아이디어') || lowerText.includes('creative') || lowerText.includes('영감') || lowerText.includes('상상')) {
+    return 'creative';
+  }
+
+  // Deep thinking patterns
+  if (lowerText.includes('철학') || lowerText.includes('깊이') || lowerText.includes('사색') || lowerText.includes('통찰')) {
+    return 'deep';
+  }
+
+  // Info patterns (questions, explanations)
+  if (lowerText.includes('?') || lowerText.includes('설명') || lowerText.includes('어떻게') || lowerText.includes('무엇')) {
+    return 'info';
+  }
+
+  return 'neutral';
+};
 
 const ChatMessageComponent: React.FC<ChatMessageProps> = ({ message, isLoading }) => {
   if (isLoading) {
@@ -32,6 +70,19 @@ const ChatMessageComponent: React.FC<ChatMessageProps> = ({ message, isLoading }
   const isModel = message.role === MessageRole.MODEL;
 
   if (isModel) {
+    const emotion = analyzeEmotion(message.content);
+    const emotionalColor = rainbowPalette.getColorForEmotion(emotion);
+
+    const emotionLabels = {
+      error: { ko: '긴급', en: 'Urgent', icon: '⚠️' },
+      warning: { ko: '주의', en: 'Caution', icon: '⚡' },
+      info: { ko: '정보', en: 'Info', icon: '💡' },
+      success: { ko: '성공', en: 'Success', icon: '✨' },
+      neutral: { ko: '평온', en: 'Calm', icon: '🌊' },
+      creative: { ko: '창의', en: 'Creative', icon: '🎨' },
+      deep: { ko: '사색', en: 'Deep', icon: '🧠' },
+    };
+
     return (
       <div className="flex items-start space-x-4">
         <div className="flex-shrink-0 w-10 h-10 rounded-full bg-gradient-to-br from-cyan-500 to-purple-600 flex items-center justify-center shadow-lg">
@@ -39,16 +90,43 @@ const ChatMessageComponent: React.FC<ChatMessageProps> = ({ message, isLoading }
                <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" />
             </svg>
         </div>
-        <div className="bg-gray-800 rounded-lg p-4 max-w-2xl prose prose-invert prose-p:text-gray-300 prose-headings:text-gray-100">
-           <p className="whitespace-pre-wrap">{message.content}</p>
+        <div className="flex-1 max-w-2xl">
+          <div
+            className="bg-gray-800 rounded-lg p-4 prose prose-invert prose-p:text-gray-300 prose-headings:text-gray-100 transition-all duration-300"
+            style={{
+              borderLeft: `4px solid ${emotionalColor.primary}`,
+              boxShadow: `0 0 20px ${emotionalColor.primary}15`
+            }}
+          >
+            <p className="whitespace-pre-wrap">{message.content}</p>
+          </div>
+          {emotion !== 'neutral' && (
+            <div className="mt-1 ml-2 flex items-center space-x-1 text-xs text-gray-500">
+              <span>{emotionLabels[emotion].icon}</span>
+              <span className="text-gray-400">
+                {emotionLabels[emotion].ko} ({emotionLabels[emotion].en})
+              </span>
+              <span className="text-gray-600">• {emotionalColor.psychology}</span>
+            </div>
+          )}
         </div>
       </div>
     );
   }
 
+  // User message
+  const userEmotion = analyzeEmotion(message.content);
+  const userColor = rainbowPalette.getColorForEmotion(userEmotion);
+
   return (
     <div className="flex items-start justify-end space-x-4">
-      <div className="bg-blue-600 text-white rounded-lg p-4 max-w-2xl">
+      <div
+        className="text-white rounded-lg p-4 max-w-2xl transition-all duration-300"
+        style={{
+          background: `linear-gradient(135deg, ${userColor.primary}dd, ${userColor.accent}dd)`,
+          boxShadow: `0 4px 12px ${userColor.primary}30`
+        }}
+      >
         <p className="whitespace-pre-wrap">{message.content}</p>
       </div>
        <div className="flex-shrink-0 w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center shadow-lg">
