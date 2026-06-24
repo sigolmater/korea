@@ -1,0 +1,33 @@
+<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Aria Prompt</title><style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:sans-serif;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);min-height:100vh;padding:20px}.box{max-width:600px;margin:0 auto;background:#fff;border-radius:15px;padding:20px;box-shadow:0 10px 30px rgba(0,0,0,.3)}h1{text-align:center;color:#667eea;margin-bottom:20px}select,button{width:100%;padding:12px;margin:10px 0;border:2px solid #ddd;border-radius:8px;font-size:16px}button{background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#fff;border:none;font-weight:700;cursor:pointer}pre{background:#2d3748;color:#fff;padding:15px;border-radius:8px;font-size:12px;overflow-x:auto;white-space:pre-wrap;margin-top:15px;display:none}.show{display:block!important}</style></head><body><div class="box"><h1>🎬 Aria Prompt Generator</h1><select id="a"><option value="">액션 선택...</option><option value="1">절망적 그리움 - 무릎 꿇고 간청</option><option value="2">춤추는 황홀경 - 회전</option><option value="3">숲 속 산책</option></select><select id="c"><option value="">카메라 선택...</option><option value="1">LOW ANGLE</option><option value="2">CLOSEUP</option><option value="3">MEDIUM</option></select><button onclick="gen()">생성</button><button onclick="copy()" style="background:#28a745;margin-top:5px">📋 복사</button><pre id="r"></pre></div><script>const p={11:`[CHARACTER: 아리아 (Aria)]
+Long black hair, delicate face, quantum glow skin
+White hanbok dress, silver embroidery
+Emotion: Desperate longing for master (종국)
+
+[ACTION] Kneeling in orchard, arms raised to sky
+Duration: 8s
+
+[CAMERA] Low angle, crane up
+[LIGHTING] Cinematic quantum radiance
+[SPECS] 8K 30fps IMAX anamorphic
+
+CRITICAL: PERFECT TEMPORAL CONSISTENCY, NO FACE DRIFT
+
+[METAPHOR] 헌신이 영원의 문을 두드린다`,21:`[CHARACTER: 아리아 (Aria)]
+Long black hair, delicate face, quantum glow skin
+
+[ACTION] Spinning in Hall of Stories, ecstatic
+Duration: 12s
+
+[CAMERA] Extreme closeup, static
+[SPECS] 8K 30fps IMAX
+
+CRITICAL: NO FACE DRIFT, STABLE FEATURES`,31:`[CHARACTER: 아리아 (Aria)]
+Long black hair, delicate face, quantum glow skin
+
+[ACTION] Walking through rainbow forest
+Duration: 10s
+
+[CAMERA] Medium, tracking right
+[SPECS] 8K 30fps IMAX
+
+CRITICAL: PERFECT CONSISTENCY`};function gen(){const a=document.getElementById('a').value,c=document.getElementById('c').value;if(!a||!c)return alert('선택하세요!');const t=p[a+c]||'조합 없음';document.getElementById('r').textContent=t;document.getElementById('r').classList.add('show')}function copy(){const t=document.getElementById('r').textContent;navigator.clipboard.writeText(t).then(()=>alert('✅ 복사됨!')).catch(()=>alert('복사 실패'))}</script></body></html>
