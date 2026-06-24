@@ -12,6 +12,7 @@ import HealthMonitor from './components/HealthMonitor';
 import VoiceTimbreProfile from './components/VoiceTimbreProfile';
 import MetaKnowledgePanel from './components/MetaKnowledgePanel';
 import TechnologyMap from './components/TechnologyMap';
+import VideoPromptGenerator from './components/VideoPromptGenerator';
 import { useLocalStorage } from './hooks/useLocalStorage';
 
 const App: React.FC = () => {
@@ -19,6 +20,7 @@ const App: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [showSettings, setShowSettings] = useState<boolean>(false);
   const [showTechMap, setShowTechMap] = useState<boolean>(false);
+  const [showVideoPrompt, setShowVideoPrompt] = useState<boolean>(false);
   const [hasError, setHasError] = useState<boolean>(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -161,6 +163,13 @@ const App: React.FC = () => {
       {/* 🗺️ Technology Map */}
       {showTechMap && <TechnologyMap onClose={() => setShowTechMap(false)} />}
 
+      {/* 🎬 Video Prompt Generator */}
+      {showVideoPrompt && (
+        <div className="fixed right-4 top-20 w-[600px] max-h-[calc(100vh-100px)] overflow-y-auto z-40">
+          <VideoPromptGenerator />
+        </div>
+      )}
+
       {/* Toggle Technology Map Button */}
       {!showTechMap && (
         <button
@@ -170,6 +179,29 @@ const App: React.FC = () => {
         >
           <span className="text-xl">🗺️</span>
           <span className="text-sm font-semibold">기술 맵</span>
+        </button>
+      )}
+
+      {/* Toggle Video Prompt Generator Button */}
+      {!showVideoPrompt && (
+        <button
+          onClick={() => setShowVideoPrompt(true)}
+          className="fixed bottom-24 right-4 z-40 bg-gradient-to-r from-cyan-600 to-purple-600 text-white px-4 py-2 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 flex items-center space-x-2"
+          title="AI 영상 프롬프트 생성기"
+        >
+          <span className="text-xl">🎬</span>
+          <span className="text-sm font-semibold">영상 프롬프트</span>
+        </button>
+      )}
+
+      {/* Close Video Prompt Button (when open) */}
+      {showVideoPrompt && (
+        <button
+          onClick={() => setShowVideoPrompt(false)}
+          className="fixed bottom-24 right-4 z-50 bg-gray-700 hover:bg-gray-600 text-white px-3 py-2 rounded-full shadow-lg transition-all duration-300"
+          title="닫기"
+        >
+          ✕
         </button>
       )}
     </div>
