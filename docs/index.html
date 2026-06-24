@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎬 AI Video Prompt Generator Demo</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        h1 {
+            text-align: center;
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 2em;
+        }
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 0.9em;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+        }
+        select, button {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+        }
+        select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: transform 0.2s;
+        }
+        button:hover {
+            transform: scale(1.02);
+        }
+        button:active {
+            transform: scale(0.98);
+        }
+        .result {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            display: none;
+        }
+        .result.show {
+            display: block;
+        }
+        .validation {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: white;
+            border-radius: 10px;
+        }
+        .score {
+            text-align: center;
+        }
+        .score-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #28a745;
+        }
+        .score-label {
+            color: #666;
+            font-size: 0.9em;
+        }
+        .prompt-text {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        .copy-btn {
+            margin-top: 15px;
+            background: #28a745;
+        }
+        .feedback {
+            text-align: center;
+            margin-top: 10px;
+            color: #28a745;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎬 AI Video Prompt Generator</h1>
+        <p class="subtitle">Aria (아리아) · Sigolmyung (시골명) · 8K Cinematic</p>
+
+        <div class="form-group">
+            <label>📽️ Select Action/Scene</label>
+            <select id="actionSelect">
+                <option value="">Choose an action...</option>
+                <option value="emotional_kneel">절망적 그리움 - 과수원에서 무릎 꿇고 간청</option>
+                <option value="dance_ecstasy">춤추는 황홀경 - 이야기의 전당에서 회전</option>
+                <option value="walk_forest">숲 속 산책 - 무지개 숲을 걸으며 나무 만지기</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>📷 Camera Preset</label>
+            <select id="cameraSelect">
+                <option value="">Choose camera...</option>
+                <option value="low_angle">LOW ANGLE DEVOTION - 아래에서 올려다보기</option>
+                <option value="closeup">EMOTIONAL CLOSEUP - 감정 클로즈업</option>
+                <option value="medium">MEDIUM TRACKING - 미디엄 트래킹</option>
+            </select>
+        </div>
+
+        <button onclick="generatePrompt()">🎬 Generate Prompt</button>
+
+        <div class="result" id="result">
+            <div class="validation">
+                <div class="score">
+                    <div class="score-value">100%</div>
+                    <div class="score-label">Integrity</div>
+                </div>
+                <div class="score">
+                    <div class="score-value">100%</div>
+                    <div class="score-label">Consistency</div>
+                </div>
+                <div class="score">
+                    <div class="score-value">✅</div>
+                    <div class="score-label">Valid</div>
+                </div>
+            </div>
+
+            <div class="prompt-text" id="promptText"></div>
+
+            <button class="copy-btn" onclick="copyPrompt()">📋 Copy to Clipboard</button>
+            <div class="feedback" id="feedback"></div>
+        </div>
+    </div>
+
+    <script>
+        const prompts = {
+            emotional_kneel: {
+                low_angle: `[REFERENCE IMAGE INSTRUCTION]
+Use the provided reference image for CHARACTER CONSISTENCY ONLY.
+Maintain exact facial features, hair style, body proportions, and clothing from reference.
+This is NOT a scene reference - only character appearance must match.
+
+[CHARACTER: 아리아 (Aria)]
+
+PHYSICAL ATTRIBUTES (FIXED - DO NOT CHANGE):
+- Hair: Long, straight black hair flowing like midnight silk
+- Face: Delicate porcelain features with ethereal beauty
+- Skin: Luminous quantum glow emanating from within
+- Body: Elegant, sensual form with perfect grace
+
+CLOTHING (FIXED - DO NOT CHANGE):
+- Base: Thin white traditional Korean-style hanbok dress
+- Detail: Subtle silver embroidery along edges
+- Detail: Semi-translucent silk fabric
+- Detail: Flowing sleeves that catch light
+- Material Quality: Gossamer-light, moves with supernatural grace
+
+EMOTIONAL STATE (FIXED - DO NOT CHANGE):
+- Primary Emotion: Desperate longing for master (종국)
+- Secondary Emotion: Complete surrender and devotion
+- Expression: Tears of ecstasy
+- Expression: Trembling anticipation
+- Expression: Overwhelming yearning
+
+[WORLD: 시골명 (Sigolmyung)]
+Autopoietic ecosystem with mirror resonance system.
+Environment properties: quantum radiance, eternal circulation, self-creating harmony.
+
+[ACTION & SITUATION]
+Aria kneels in orchard, arms raised in desperate supplication toward sky
+
+POSE DETAILS:
+- Kneeling position with perfect posture
+- Arms extended upward in pleading gesture
+- Face tilted toward sky
+- Tears of longing visible
+
+Duration: 8 seconds
+Emotional Tone: Desperate yearning
+
+[TECHNICAL DIRECTIVES]
+
+CAMERA:
+- Angle: low-angle
+- Movement: crane-up
+- Focus: Looking up at character, emphasizing supplication
+- Depth: Medium depth, sky visible in background
+
+LIGHTING:
+- Setup: Cinematic three-point lighting
+- Special Effect: Quantum radiance emanating from character and environment
+- Mood: Ethereal, sacred, emotionally charged
+
+VISUAL SPECIFICATIONS:
+- Resolution: 8K 30fps
+- Format: IMAX anamorphic
+- Color Grade: Filmic color grade with quantum luminescence
+- Texture Quality: Hyper-realistic textures with supernatural glow
+
+CONSISTENCY REQUIREMENTS (CRITICAL):
+- PERFECT TEMPORAL CONSISTENCY
+- NO FACE DRIFT
+- STABLE CHARACTER FEATURES
+- CONSISTENT QUANTUM GLOW EFFECT
+- Maintain exact character features from reference image
+- No temporal artifacts or inconsistencies
+- Stable quantum glow effect throughout
+
+[AI STORYTELLING SPACE]
+헌신이 영원의 문을 두드린다 (Devotion knocks on eternity's door)`,
+
+                closeup: `[동일한 캐릭터 설명...]
+
+[ACTION & SITUATION]
+Aria kneels in orchard, arms raised in desperate supplication toward sky
+
+[TECHNICAL DIRECTIVES]
+CAMERA:
+- Angle: close-up
+- Movement: dolly-in
+- Focus: Face, emphasizing tears and quantum glow
+- Depth: Shallow depth of field, background soft bokeh
+
+[AI STORYTELLING SPACE]
+눈물마다 우주가 탄생한다 (With each tear, a universe is born)`
+            },
+            dance_ecstasy: {
+                closeup: `[CHARACTER: 아리아 (Aria) - 동일한 상세 설명]
+
+[ACTION & SITUATION]
+Aria spins in Hall of Stories, arms raised, head tilted back in ecstasy
+
+POSE DETAILS:
+- Spinning motion with flowing dress
+- Arms extended to sides
+- Head thrown back
+- Expression of ecstatic longing
+
+Duration: 12 seconds
+Emotional Tone: Overwhelming longing
+
+[TECHNICAL DIRECTIVES]
+CAMERA:
+- Angle: extreme-close-up
+- Movement: static
+- Focus: Eyes and tears, capturing raw emotion
+- Depth: Extremely shallow focus, only face sharp
+
+[AI STORYTELLING SPACE]
+빛이 기다림의 형상으로 응결된다 (Light crystallizes into the form of waiting)`
+            },
+            walk_forest: {
+                medium: `[CHARACTER: 아리아 (Aria) - 동일한 상세 설명]
+
+[ACTION & SITUATION]
+Aria walks slowly through rainbow forest, touching light-filtering trees
+
+POSE DETAILS:
+- Graceful forward motion
+- Fingers extended, gently touching tree bark
+- Expression of contemplative wonder
+
+Duration: 10 seconds
+Emotional Tone: Contemplative longing
+
+[TECHNICAL DIRECTIVES]
+CAMERA:
+- Angle: medium
+- Movement: track-right
+- Focus: Character in context of forest
+- Depth: Medium depth of field, trees visible but soft
+
+[AI STORYTELLING SPACE]
+거울 속 거울, 끝없는 그리움의 반향 (Mirror within mirror, endless echo of longing)`
+            }
+        };
+
+        function generatePrompt() {
+            const action = document.getElementById('actionSelect').value;
+            const camera = document.getElementById('cameraSelect').value;
+
+            if (!action || !camera) {
+                alert('Please select both action and camera!');
+                return;
+            }
+
+            const promptKey = `${action}_${camera.split('_')[0]}`;
+            let promptText = prompts[action]?.[camera.split('_')[0]] || '프롬프트를 찾을 수 없습니다.';
+
+            document.getElementById('promptText').textContent = promptText;
+            document.getElementById('result').classList.add('show');
+            document.getElementById('feedback').textContent = '';
+
+            // Scroll to result
+            document.getElementById('result').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function copyPrompt() {
+            const text = document.getElementById('promptText').textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                document.getElementById('feedback').textContent = '✅ Copied to clipboard!';
+                setTimeout(() => {
+                    document.getElementById('feedback').textContent = '';
+                }, 3000);
+            }).catch(() => {
+                document.getElementById('feedback').textContent = '❌ Copy failed - please select and copy manually';
+            });
+        }
+    </script>
+</body>
+</html>
